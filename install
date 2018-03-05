@@ -1,0 +1,55 @@
+#!/bin/bash
+
+installationType="$1"
+
+# production release
+if [[ "$installationType" == "production" ]]; then
+  # removing any previous build folder
+  if [ -d "build_release" ]; then
+    rm -r "build_release"
+  fi
+
+  # making sure UPIPE_ROOT is defined
+  if [ -z $UPIPE_ROOT ]; then
+    echo "UPIPE_ROOT is not defined"
+    exit 1
+  fi
+
+  # showing a prompt confirmation, in case of a mistake
+  read -r -p "Are you sure you want to run the production release? [y/N] " response
+  if [[ "$response" =~ ^(yes|y)$ ]]; then
+    # running installation
+    qbs build_release project.releaseType:production qbs.installRoot:$UPIPE_ROOT
+  fi
+
+# development release
+elif [ -z "$installationType" ]; then
+
+  # making sure UPIPE_DEV_ROOT is defined
+  if [ -z $UPIPE_DEV_ROOT ]; then
+    echo "UPIPE_DEV_ROOT is not defined"
+    exit 1
+  fi
+
+  # TODO: workaround to avoid the installation not detecting
+  # modifications in files and installing a wrong version from the cache
+  # (rather than invalidating the cache).
+  # This issue has been noticed in qbs 1.8.1
+  if [ -d "default" ]; then
+    rm -r "default"
+  fi
+
+  # ATTENTION:
+  # The development version is based on the current UVER_RV_VERSION, in case
+  # you want to build to all rv versions, run the line bellow:
+  # bash -c "unset UVER_RV_VERSION; ./install"
+  rvMajorVersion=$(majorver $UVER_RV_VERSION)
+
+  # running installation
+  qbs project.releaseType:dev project.rvMajorVersion:$rvMajorVersion qbs.installRoot:$UPIPE_DEV_ROOT
+
+# invalid installation type
+else
+  echo "Invalid installation type ($installationType). Available types: \"\" (empty) for development installation and \"production\" for production installation)"
+  exit 1
+fi
