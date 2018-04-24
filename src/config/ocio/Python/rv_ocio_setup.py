@@ -6,38 +6,38 @@ from ingestor.ExpressionEvaluator import ExpressionEvaluator
 # Convenience functions to set the values in the specific nodes
 def setInt(node, prop, value):
     """Set an int property."""
-    property = '{node}.{prop}'.format(node=node, prop=prop)
-    rv.commands.setIntProperty(property, [value], True)
+    propertyName = '{node}.{prop}'.format(node=node, prop=prop)
+    rv.commands.setIntProperty(propertyName, [value], True)
 
 
 def getInt(node, prop):
     """Get an int property."""
-    property = '{node}.{prop}'.format(node=node, prop=prop)
-    return rv.commands.getIntProperty(property, 0, 1)[0]
+    propertyName = '{node}.{prop}'.format(node=node, prop=prop)
+    return rv.commands.getIntProperty(propertyName, 0, 1)[0]
 
 
 def setFloat(node, prop, value):
     """Set a float property."""
-    property = '{node}.{prop}'.format(node=node, prop=prop)
-    rv.commands.setFloatProperty(property, [float(value)], True)
+    propertyName = '{node}.{prop}'.format(node=node, prop=prop)
+    rv.commands.setFloatProperty(propertyName, [float(value)], True)
 
 
 def getFloat(node, prop):
     """Get a float property."""
-    property = '{node}.{prop}'.format(node=node, prop=prop)
-    return rv.commands.getFloatProperty(property, 0, 1)[0]
+    propertyName = '{node}.{prop}'.format(node=node, prop=prop)
+    return rv.commands.getFloatProperty(propertyName, 0, 1)[0]
 
 
 def getString(node, prop):
     """Get a string property."""
-    property = '{node}.{prop}'.format(node=node, prop=prop)
-    return rv.commands.getStringProperty(property, 0, 1)[0]
+    propertyName = '{node}.{prop}'.format(node=node, prop=prop)
+    return rv.commands.getStringProperty(propertyName, 0, 1)[0]
 
 
 def setString(node, prop, value):
     """Set a string property."""
-    property = '{node}.{prop}'.format(node=node, prop=prop)
-    rv.commands.setStringProperty(property, [value], True)
+    propertyName = '{node}.{prop}'.format(node=node, prop=prop)
+    rv.commands.setStringProperty(propertyName, [value], True)
 
 
 def setComponent(node, prop, value):
@@ -69,7 +69,7 @@ def ocio_config_from_media(*args, **kwargs):
     return OCIO.Config.CreateFromFile(config_file)
 
 
-def ocio_node_from_media(config, node, default, media=None, attributes=None):
+def ocio_node_from_media(config, node, default, media=None, _=None):
     """
     Override the original 'ocio_node_from_media' from the 'ocio_source_setup' plugin.
 
