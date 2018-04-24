@@ -1,58 +1,64 @@
 import rv
 import os
 import PyOpenColorIO as OCIO
-from rv import commands
 from ingestor.ExpressionEvaluator import ExpressionEvaluator
 
-# Convinient functions to set the values in the specific nodes
+# Convenience functions to set the values in the specific nodes
 def setInt(node, prop, value):
     """Set an int property."""
-    commands.setIntProperty(node + '.' + prop, [value], True)
+    property = '{node}.{prop}'.format(node=node, prop=prop)
+    rv.commands.setIntProperty(property, [value], True)
 
 
 def getInt(node, prop):
     """Get an int property."""
-    return commands.getIntProperty(node + '.' + prop, 0, 1)[0]
+    property = '{node}.{prop}'.format(node=node, prop=prop)
+    return rv.commands.getIntProperty(property, 0, 1)[0]
 
 
 def setFloat(node, prop, value):
     """Set a float property."""
-    commands.setFloatProperty(node + "." + prop, [float(value)], True)
+    property = '{node}.{prop}'.format(node=node, prop=prop)
+    rv.commands.setFloatProperty(property, [float(value)], True)
 
 
 def getFloat(node, prop):
     """Get a float property."""
-    return commands.getFloatProperty(node + "." + prop, 0, 1)[0]
+    property = '{node}.{prop}'.format(node=node, prop=prop)
+    return rv.commands.getFloatProperty(property, 0, 1)[0]
 
 
 def getString(node, prop):
     """Get a string property."""
-    return commands.getStringProperty(node + '.' + prop, 0, 1)[0]
+    property = '{node}.{prop}'.format(node=node, prop=prop)
+    return rv.commands.getStringProperty(property, 0, 1)[0]
 
 
 def setString(node, prop, value):
     """Set a string property."""
-    commands.setStringProperty(node + '.' + prop, [value], True)
-    assert getString(node, prop) == value
+    property = '{node}.{prop}'.format(node=node, prop=prop)
+    rv.commands.setStringProperty(property, [value], True)
 
 
 def setComponent(node, prop, value):
     """Set a component property."""
     for k, v in value.items():
-        if not commands.propertyExists(node + '.' + prop + '.' + k):
-            commands.newProperty(node + '.' + prop + '.' + k, commands.StringType, 1)
-        setString(node, prop + '.' + k, v)
+        component = '{node}.{prop}.{key}'.format(node=node, prop=prop, key=k)
+        if not rv.commands.propertyExists(component):
+            rv.commands.newProperty(component, rv.commands.StringType, 1)
+        keyProperty = '{prop}.{key}'.format(prop=prop, key=k)
+        setString(node, keyProperty, v)
 
 
 def groupMemberOfType(node, memberType):
     """Get a group member of specific type."""
-    for n in commands.nodesInGroup(node):
-        if commands.nodeType(n) == memberType:
+    for n in rv.commands.nodesInGroup(node):
+        if rv.commands.nodeType(n) == memberType:
             return n
     return None
 
 
-def ocio_config_from_media(fileName, attributes):
+def ocio_config_from_media(*args, **kwargs):
     """
     Override the original 'ocio_config_from_media' from the 'ocio_source_setup' plugin.
 
@@ -60,8 +66,7 @@ def ocio_config_from_media(fileName, attributes):
     """
     media = rv.commands.sources()[0][0]
     config_file = ExpressionEvaluator.run('rfindpath', 'config/OCIO/config.ocio', media)
-    config_ocio = OCIO.Config.CreateFromFile(config_file)
-    return config_ocio
+    return OCIO.Config.CreateFromFile(config_file)
 
 
 def ocio_node_from_media(config, node, default, media=None, attributes=None):
@@ -75,7 +80,7 @@ def ocio_node_from_media(config, node, default, media=None, attributes=None):
     """
     result = [{"nodeType": d, "context": {}, "properties": {}} for d in default]
 
-    nodeType = commands.nodeType(node)
+    nodeType = rv.commands.nodeType(node)
 
     if (nodeType == "RVDisplayPipelineGroup"):
         # The display is always the color viewer, the color space in the ocio will set the final color space
@@ -103,6 +108,8 @@ def ocio_node_from_media(config, node, default, media=None, attributes=None):
         ]
 
     elif (nodeType == "RVLinearizePipelineGroup"):
+        if not media:
+            return result
         sg, _, projectName = getDataFromMedia(media)
         # This is not the right way to do it, but in the future we will have the ids instead of the names
         sgProject = sg.find_one(
